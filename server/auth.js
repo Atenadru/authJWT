@@ -5,21 +5,33 @@ const app = express();
 const jwt = require("jsonwebtoken");
 
 app.use(express.json());
+
 let tokensStorage = [];
 
-app.delete("/logout", (req, res) => {
-  tokensStorage = tokensStorage.filter((token) => token !== req.body.token);
-  res.sendStatus(204);
-});
+/* 
+  ? /login cuando se golpea la ruta responde con un token y un refresh_token
+*/
 
 app.post("/login", (req, res) => {
   const username = req.body.username;
+  console.log(`login username: ${username}`);
+  //variable genrada con el valor req.body.username
   const user = { name: username };
 
+  //? los dos token se genran con el mismo usuario
   const accessToken = generateAccessToken(user);
   const refreshToken = jwt.sign(user, config.REFRESH_TOKEN_ACCESS);
+
+  //se almacena refresh_token para luego verificar
   tokensStorage.push(refreshToken);
+
   res.json({ accessToken: accessToken, refreshToken: refreshToken });
+});
+
+//!cerrar seccion
+app.delete("/logout", (req, res) => {
+  tokensStorage = tokensStorage.filter((token) => token !== req.body.token);
+  res.sendStatus(204);
 });
 
 /**
@@ -40,6 +52,7 @@ app.post("/token", (req, res) => {
   });
 });
 
+//genera un token
 function generateAccessToken(user) {
   return jwt.sign(user, config.ACCESS_TOKEN_SECRET, { expiresIn: "30s" });
 }

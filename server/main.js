@@ -17,14 +17,11 @@ const posts = [
   },
 ];
 
-app.get("/", (req, res) => {
-  res.send("<h1>Refresh Token <h1/>");
-});
-
 app.get("/posts", authenticateToken, (req, res) => {
   res.json(posts.filter((post) => post.username === req.user.name));
 });
 
+//un middlelware para validar si un token es valido
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -35,6 +32,7 @@ function authenticateToken(req, res, next) {
       console.log(err.message);
       return res.sendStatus(403);
     }
+    //si no hay error devuelvo al usuario el el request
     req.user = user;
     console.log(user);
     next();
